@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#83c9e8">
+    <meta
+      name="description"
+      content="Resuelve tres acertijos de cifrado y descubre si tienes lo necesario para ser guardián del código."
+    >
+    <title>El desafío del código</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="game.js" defer></script>
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="site-header">
+        <a class="brand" href="./" aria-label="El desafío del código, inicio">
+          <span class="brand-mark" aria-hidden="true">▣</span>
+          <span>El desafío del código</span>
+        </a>
+        <span class="header-note">Un minijuego de cifrado</span>
+      </header>
+
+      <section class="game-card" aria-labelledby="game-title">
+        <div class="eyebrow"><span class="status-dot"></span> ARCHIVO CLASIFICADO</div>
+
+        <section id="welcome-screen" class="screen">
+          <p class="step-label">MISIÓN 01 <span>—</span> 03</p>
+          <h1 id="game-title">¿Puedes descifrar<br>el <span>mensaje secreto</span>?</h1>
+          <p class="intro">
+            Dos mensajes en clave y un reto con dibujos te separan del título de
+            Guardián del Código. Escribe tu nombre y demuestra tu ingenio.
+          </p>
+
+          <form id="name-form" class="answer-form">
+            <label for="player-name">¿Cómo te llamas?</label>
+            <div class="input-row">
+              <input
+                id="player-name"
+                name="playerName"
+                type="text"
+                maxlength="30"
+                autocomplete="given-name"
+                placeholder="Tu nombre"
+                required
+              >
+              <button class="button button-primary" type="submit">Comenzar <span aria-hidden="true">→</span></button>
+            </div>
+          </form>
+
+          <div class="mission-note">
+            <span aria-hidden="true">✦</span>
+            <p>Sin límite de intentos. Puedes pedir una pista cuando la necesites.</p>
+          </div>
+        </section>
+
+        <section id="puzzle-screen" class="screen" hidden>
+          <div class="puzzle-heading">
+            <div>
+              <p id="step-label" class="step-label"></p>
+              <h1 id="puzzle-title"></h1>
+            </div>
+            <span id="player-badge" class="player-badge"></span>
+          </div>
+
+          <div class="progress-track" role="progressbar" aria-label="Progreso de la misión" aria-valuemin="0" aria-valuemax="3">
+            <span id="progress-fill"></span>
+          </div>
+
+          <p id="puzzle-description" class="intro puzzle-description"></p>
+          <div class="cipher-box">
+            <span class="cipher-label">MENSAJE CIFRADO</span>
+            <p id="cipher-text" class="cipher-text"></p>
+          </div>
+
+          <section id="rebus-box" class="rebus-box" aria-label="Acertijos con dibujos" hidden>
+            <form id="rebus-form">
+              <div id="rebus-clues" class="rebus-clues"></div>
+              <button class="button button-primary rebus-submit" type="submit">
+                Comprobar respuestas <span aria-hidden="true">→</span>
+              </button>
+            </form>
+          </section>
+
+          <form id="answer-form" class="answer-form">
+            <label for="answer-input">Tu descifrado</label>
+            <div class="input-row">
+              <input
+                id="answer-input"
+                name="answer"
+                type="text"
+                autocomplete="off"
+                placeholder="Escribe el mensaje"
+                required
+              >
+              <button class="button button-primary" type="submit">Comprobar <span aria-hidden="true">→</span></button>
+            </div>
+          </form>
+
+          <div class="puzzle-actions">
+            <button id="hint-button" class="text-button" type="button">Dame una pista <span aria-hidden="true">↗</span></button>
+            <span id="feedback" class="feedback" role="status" aria-live="polite"></span>
+          </div>
+          <p id="hint-text" class="hint-text" hidden></p>
+        </section>
+
+        <section id="win-screen" class="screen win-screen" hidden>
+          <div class="win-icon" aria-hidden="true">✦</div>
+          <p class="step-label">MISIÓN COMPLETADA</p>
+          <h1 id="win-title"></h1>
+          <p class="intro">
+            Has resuelto los tres retos. Tu ingenio te ha ganado un lugar
+            entre los Guardianes del Código.
+          </p>
+          <div class="win-stamp"><span aria-hidden="true">✓</span> GUARDIÁN DEL CÓDIGO</div>
+          <button id="play-again-button" class="button button-secondary" type="button">Jugar otra vez</button>
+        </section>
+
+        <footer class="card-footer">
+          <span>AGENCIA DE CIFRADO · EST. 2025</span>
+          <span>EXPEDIENTE <strong>07-ALFA</strong></span>
+        </footer>
+      </section>
+      <p class="page-caption">OBSERVA · DEDUCE · DESCIFRA</p>
+    </main>
+  </body>
+</html>
