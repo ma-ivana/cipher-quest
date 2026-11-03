@@ -3,8 +3,8 @@ const riddles = [
     title: "El desplazamiento",
     description:
       "Julio César protegía sus mensajes moviendo cada letra tres lugares hacia adelante. Para leer este, mueve cada letra tres lugares hacia atrás.",
-    cipher: "OD SXHUWD HVWD DELHUWD",
-    answer: "la puerta esta abierta",
+    cipher: "KRB HV XQ GLD LPSRUWDQWH",
+    answer: "Hoy es un día importante",
     hint: "Por ejemplo, para descifrar la O, retrocede tres letras en el alfabeto: O → N → M → L.",
   },
   {
@@ -14,6 +14,14 @@ const riddles = [
     cipher: "VO HVXIVGL VHGZ YZQL OZ KOZMGZ WV OZ VMGIZWZ",
     answer: "el secreto esta bajo la planta de la entrada",
     hint: "A ↔ Z, B ↔ Y, C ↔ X. Busca la letra que ocupa la posición opuesta en el alfabeto.",
+  },
+  {
+    title: "Escribí la palabra clave para seguir",
+    description:
+      "Usá la pista que encontraste.",
+    cipher: "Resolvé el acertijo y escribí acá la palabra clave.",
+    answer: "Jasperito",
+    hint: "Le digo Jasper si me enojo, o también \"perro mugroso\", pero cuando es dulce y muy tiernito, le decimos ...",
   },
   {
     title: "Dibujos en clave",
@@ -33,8 +41,9 @@ const riddles = [
       {
         parts: [
           { drawing: "📝✅", name: "una lista con tildes de verificación" },
-          { drawing: "🎂", name: "una torta con velitas encendidas" },
           { drawing: "😗💨", name: "una boca que sopla" },
+          { drawing: "🎂", name: "una torta con velitas encendidas" },
+
         ],
         operators: ["+", "+"],
         answer: "cumpleaños",
@@ -43,7 +52,7 @@ const riddles = [
       {
         parts: [
           { drawing: "🍅", name: "un tomate" },
-          { drawing: "MATE", name: "la palabra mate" },
+          { drawing: "🧉", name: "un mate" },
         ],
         operators: ["−"],
         answer: "to",
@@ -52,7 +61,8 @@ const riddles = [
       {
         parts: [
           { drawing: "🚲", name: "una bicicleta" },
-          { drawing: "CICLETA", name: "la palabra cicleta" },
+          { drawing: "🔄", name: "un ciclo" },
+          { drawing: "- ETA", name: "eta" },
         ],
         operators: ["−"],
         answer: "bi",
@@ -85,9 +95,42 @@ const hintButton = document.querySelector("#hint-button");
 const hintText = document.querySelector("#hint-text");
 const winTitle = document.querySelector("#win-title");
 const playAgainButton = document.querySelector("#play-again-button");
+const testSoundButton = document.querySelector("#test-sound-button");
 
 let playerName = "";
 let riddleIndex = 0;
+let celebrationAudioContext = null;
+const celebrationLayer = document.createElement("div");
+celebrationLayer.id = "celebration-layer";
+celebrationLayer.setAttribute("aria-hidden", "true");
+document.body.append(celebrationLayer);
+
+function getCelebrationAudioContext() {
+  const AudioCtor = window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioCtor) {
+    return null;
+  }
+
+  if (!celebrationAudioContext) {
+    celebrationAudioContext = new AudioCtor({ latencyHint: "interactive" });
+  }
+
+  return celebrationAudioContext;
+}
+
+function unlockCelebrationAudio() {
+  const ctx = getCelebrationAudioContext();
+
+  if (ctx?.state === "suspended") {
+    ctx.resume().catch((error) => {
+      console.warn("Could not unlock celebration audio:", error);
+    });
+  }
+}
+
+document.addEventListener("pointerdown", unlockCelebrationAudio, { once: true });
+document.addEventListener("keydown", unlockCelebrationAudio, { once: true });
 
 function normalizeAnswer(value) {
   return value
@@ -199,10 +242,154 @@ function showPuzzle() {
   }
 }
 
+async function playCelebrationSound() {
+  const ctx = getCelebrationAudioContext();
+
+  if (!ctx) {
+    console.warn("Celebration audio is not supported in this browser.");
+    return;
+  }
+
+  if (ctx.state === "suspended") {
+    try {
+      await ctx.resume();
+    } catch (error) {
+      console.warn("Could not start celebration audio:", error);
+      return;
+    }
+  }
+
+  const startTime = ctx.currentTime + 0.05;
+  const master = ctx.createGain();
+  master.gain.value = 0.85;
+  master.connect(ctx.destination);
+
+  const fanfare = [659.25, 783.99, 987.77, 1318.51];
+  fanfare.forEach((frequency, index) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const start = startTime + index * 0.16;
+
+    osc.type = "square";
+    osc.frequency.setValueAtTime(frequency, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.16, start + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.27);
+
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(start);
+    osc.stop(start + 0.28);
+  });
+
+  for (let burst = 0; burst < 22; burst += 1) {
+    const noiseBuffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * 0.11), ctx.sampleRate);
+    const noiseData = noiseBuffer.getChannelData(0);
+    const noiseStart = startTime + 0.45 + burst * 0.075 + Math.random() * 0.035;
+
+    for (let i = 0; i < noiseData.length; i += 1) {
+      const envelope = Math.exp(-i / 900);
+      noiseData[i] = (Math.random() * 2 - 1) * envelope;
+    }
+
+    const noiseSource = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    const noiseGain = ctx.createGain();
+
+    noiseSource.buffer = noiseBuffer;
+    filter.type = "bandpass";
+    filter.frequency.value = 1900 + Math.random() * 900;
+    filter.Q.value = 0.8;
+    noiseGain.gain.setValueAtTime(0.0001, noiseStart);
+    noiseGain.gain.exponentialRampToValueAtTime(0.52, noiseStart + 0.003);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, noiseStart + 0.09);
+
+    noiseSource.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(master);
+    noiseSource.start(noiseStart);
+    noiseSource.stop(noiseStart + 0.11);
+  }
+
+  const cheerStart = startTime + 0.65;
+  const cheerDuration = 2.4;
+  const cheerFilter = ctx.createBiquadFilter();
+  const cheerGain = ctx.createGain();
+  cheerFilter.type = "lowpass";
+  cheerFilter.frequency.value = 2200;
+  cheerGain.gain.setValueAtTime(0.0001, cheerStart);
+  cheerGain.gain.exponentialRampToValueAtTime(0.18, cheerStart + 0.2);
+  cheerGain.gain.setValueAtTime(0.18, cheerStart + cheerDuration - 0.4);
+  cheerGain.gain.exponentialRampToValueAtTime(0.0001, cheerStart + cheerDuration);
+  cheerFilter.connect(cheerGain);
+  cheerGain.connect(master);
+
+  [180, 226, 270, 320, 365].forEach((frequency, index) => {
+    const voice = ctx.createOscillator();
+    const voiceGain = ctx.createGain();
+    const pitch = frequency * (0.92 + Math.random() * 0.16);
+
+    voice.type = "sawtooth";
+    voice.frequency.setValueAtTime(pitch, cheerStart);
+    voice.frequency.linearRampToValueAtTime(pitch * (1.1 + Math.random() * 0.08), cheerStart + 0.45);
+    voice.frequency.linearRampToValueAtTime(pitch * (0.96 + Math.random() * 0.12), cheerStart + cheerDuration);
+    voiceGain.gain.value = 0.05 + index * 0.005;
+    voice.connect(voiceGain);
+    voiceGain.connect(cheerFilter);
+    voice.start(cheerStart);
+    voice.stop(cheerStart + cheerDuration);
+  });
+}
+
+function launchCelebration() {
+  celebrationLayer.replaceChildren();
+
+  const colors = ["#c5f36b", "#f9d775", "#7ee7ff", "#ff88b8", "#b8a0ff", "#88f0bd"];
+  const totalPieces = 120;
+
+  for (let index = 0; index < totalPieces; index += 1) {
+    const piece = document.createElement("span");
+    const kind = index % 8 === 0 ? "serpentine" : index % 3 === 0 ? "glitter" : "confetti";
+    const hue = colors[index % colors.length];
+
+    piece.className = `celebration-${kind}`;
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.setProperty("--drift", `${(Math.random() - 0.5) * 220}px`);
+    piece.style.setProperty("--duration", `${6 + Math.random() * 6}s`);
+    piece.style.setProperty("--delay", `${Math.random() * 0.8}s`);
+    piece.style.background = hue;
+    piece.style.opacity = "0";
+    piece.style.animationDelay = `${Math.random() * 0.6}s`;
+
+    if (kind === "confetti") {
+      piece.style.width = `${8 + Math.random() * 12}px`;
+      piece.style.height = `${14 + Math.random() * 18}px`;
+      piece.style.transform = `rotate(${Math.random() * 180}deg)`;
+    } else if (kind === "serpentine") {
+      piece.style.width = `${16 + Math.random() * 10}px`;
+      piece.style.height = `${68 + Math.random() * 32}px`;
+      piece.style.borderRadius = "999px";
+      piece.style.background = `repeating-linear-gradient(180deg, ${hue} 0 10px, rgba(255,255,255,0.85) 10px 16px)`;
+    } else {
+      piece.style.width = `${6 + Math.random() * 5}px`;
+      piece.style.height = piece.style.width;
+      piece.style.boxShadow = `0 0 8px ${hue}`;
+    }
+
+    celebrationLayer.append(piece);
+  }
+
+  window.setTimeout(() => {
+    celebrationLayer.replaceChildren();
+  }, 11000);
+}
+
 function showWin() {
   puzzleScreen.hidden = true;
   winScreen.hidden = false;
   winTitle.textContent = "¡Feliz cumpleaños, Tobi!";
+  playCelebrationSound();
+  launchCelebration();
   playAgainButton.focus();
 }
 
@@ -281,3 +468,5 @@ playAgainButton.addEventListener("click", () => {
   welcomeScreen.hidden = false;
   nameInput.focus();
 });
+
+testSoundButton.addEventListener("click", playCelebrationSound);

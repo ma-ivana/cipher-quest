@@ -461,6 +461,11 @@ input:focus {
   color: #e5eddb;
 }
 
+.win-screen .text-button {
+  display: block;
+  margin: 0 auto 10px;
+}
+
 .button-secondary:hover {
   background: rgb(197 243 107 / 8%);
 }
@@ -475,6 +480,74 @@ input:focus {
 .card-footer strong {
   color: #c3ccda;
   font-weight: 500;
+}
+
+#celebration-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.celebration-confetti,
+.celebration-serpentine,
+.celebration-glitter {
+  position: absolute;
+  top: -16vh;
+  left: 0;
+  display: block;
+  opacity: 0;
+  animation: celebration-fall var(--duration) linear forwards;
+}
+
+.celebration-confetti {
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 20%);
+}
+
+.celebration-serpentine {
+  border: 1px solid rgb(255 255 255 / 25%);
+  background: repeating-linear-gradient(180deg, #fff 0 10px, rgb(255 255 255 / 20%) 10px 16px);
+}
+
+.celebration-glitter {
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 10px currentColor;
+  animation-name: celebration-sparkle;
+}
+
+@keyframes celebration-fall {
+  0% {
+    transform: translate3d(0, -15vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(var(--drift), 115vh, 0) rotate(540deg);
+    opacity: 0;
+  }
+}
+
+@keyframes celebration-sparkle {
+  0% {
+    transform: translate3d(0, -15vh, 0) scale(0.5);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(var(--drift), 115vh, 0) scale(1.4);
+    opacity: 0;
+  }
 }
 
 .page-caption {
